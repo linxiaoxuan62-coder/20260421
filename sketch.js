@@ -66,10 +66,36 @@ function draw() {
   translate(width, 0);
   scale(-1, 1);
   
-  // 繪製影像（由於座標系已翻轉，置中公式依然適用，影像會正確顯示在中間並呈現鏡像效果）
   let xPos = (width - w) / 2;
   let yPos = (height - h) / 2;
-  image(capture, xPos, yPos, w, h);
+
+  // 馬賽克與黑白處理邏輯
+  if (capture.width > 0) {
+    capture.loadPixels();
+    let stepSize = 20; // 定義 20x20 為一個單位
+    
+    // 計算縮放比例，確保馬賽克能正確填滿 60% 的顯示區域
+    let scaleW = w / capture.width;
+    let scaleH = h / capture.height;
+
+    for (let y = 0; y < capture.height; y += stepSize) {
+      for (let x = 0; x < capture.width; x += stepSize) {
+        // 取得該單位左上角像素的索引位置
+        let i = (x + y * capture.width) * 4;
+        let r = capture.pixels[i];
+        let g = capture.pixels[i + 1];
+        let b = capture.pixels[i + 2];
+
+        // 計算平均值 (R+G+B)/3 轉為灰階
+        let avg = (r + g + b) / 3;
+
+        // 使用該灰階值填滿該單位的矩形
+        fill(avg);
+        noStroke();
+        rect(xPos + x * scaleW, yPos + y * scaleH, stepSize * scaleW, stepSize * scaleH);
+      }
+    }
+  }
   
   // 將 pg 繪圖層顯示在視訊畫面的上方，位置與大小皆與視訊同步
   image(pg, xPos, yPos, w, h);

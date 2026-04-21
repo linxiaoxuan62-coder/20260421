@@ -1,5 +1,6 @@
 let capture;
 let pg;
+let bubbles = [];
 
 function setup() {
   // 建立一個跟視窗一樣大的畫布
@@ -12,6 +13,11 @@ function setup() {
 
   // 產生一個與視訊畫面預設寬高一樣的繪圖層 (預設通常為 640x480)
   pg = createGraphics(640, 480);
+
+  // 初始化泡泡
+  for (let i = 0; i < 20; i++) {
+    bubbles.push(new Bubble(pg.width, pg.height));
+  }
 }
 
 function draw() {
@@ -25,6 +31,10 @@ function draw() {
   // 如果攝影機已讀取，且繪圖層大小與攝影機不符，則重新調整繪圖層大小
   if (capture.width > 0 && (pg.width !== capture.width || pg.height !== capture.height)) {
     pg = createGraphics(capture.width, capture.height);
+    bubbles = []; // 重置泡泡
+    for (let i = 0; i < 20; i++) {
+      bubbles.push(new Bubble(pg.width, pg.height));
+    }
   }
 
   // 在繪圖層 (pg) 上進行繪製
@@ -36,6 +46,12 @@ function draw() {
   pg.stroke(255);
   pg.noFill();
   pg.rect(10, 10, pg.width - 20, pg.height - 20, 10); // 畫一個邊框
+
+  // 更新並繪製泡泡到 pg 圖層上
+  for (let b of bubbles) {
+    b.update();
+    b.display(pg);
+  }
 
   push();
   // 修正左右顛倒問題：將座標原點移至畫布右側，並水平翻轉座標系
@@ -55,4 +71,34 @@ function draw() {
 function windowResized() {
   // 當視窗大小改變時，重新調整畫布大小
   resizeCanvas(windowWidth, windowHeight);
+}
+
+// 泡泡類別
+class Bubble {
+  constructor(w, h) {
+    this.w = w;
+    this.h = h;
+    this.reset();
+  }
+
+  reset() {
+    this.x = random(this.w);
+    this.y = this.h + random(20, 100); // 從畫面下方外面開始
+    this.r = random(2, 6);            // 隨機半徑 (縮小尺寸)
+    this.speed = random(1, 3);        // 隨機上升速度
+  }
+
+  update() {
+    this.y -= this.speed;             // 向上移動
+    // 如果泡泡完全離開畫面頂部，重置它
+    if (this.y < -this.r) {
+      this.reset();
+    }
+  }
+
+  display(graphics) {
+    graphics.fill(255, 255, 255, 150); // 半透明白色
+    graphics.noStroke();
+    graphics.ellipse(this.x, this.y, this.r * 2);
+  }
 }

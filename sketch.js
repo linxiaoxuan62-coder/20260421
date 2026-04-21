@@ -18,9 +18,14 @@ function draw() {
   let w = width * 0.6;
   let h = height * 0.6;
   
-  // 將影像繪製在畫布中間
-  // 座標計算為：(畫布寬度 - 影像寬度) / 2
+  push();
+  // 修正左右顛倒問題：將座標原點移至畫布右側，並水平翻轉座標系
+  translate(width, 0);
+  scale(-1, 1);
+  
+  // 繪製影像（由於座標系已翻轉，置中公式依然適用，影像會正確顯示在中間並呈現鏡像效果）
   image(capture, (width - w) / 2, (height - h) / 2, w, h);
+  pop();
 }
 
 function windowResized() {

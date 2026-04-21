@@ -1,4 +1,5 @@
 let capture;
+let pg;
 
 function setup() {
   // 建立一個跟視窗一樣大的畫布
@@ -8,6 +9,9 @@ function setup() {
   capture = createCapture(VIDEO);
   // 隱藏預設產生的 HTML 影片節點，只在畫布上繪製
   capture.hide();
+
+  // 產生一個與視訊畫面預設寬高一樣的繪圖層 (預設通常為 640x480)
+  pg = createGraphics(640, 480);
 }
 
 function draw() {
@@ -18,13 +22,33 @@ function draw() {
   let w = width * 0.6;
   let h = height * 0.6;
   
+  // 如果攝影機已讀取，且繪圖層大小與攝影機不符，則重新調整繪圖層大小
+  if (capture.width > 0 && (pg.width !== capture.width || pg.height !== capture.height)) {
+    pg = createGraphics(capture.width, capture.height);
+  }
+
+  // 在繪圖層 (pg) 上進行繪製
+  pg.clear(); // 清除上一幀內容，保持透明
+  pg.fill(255, 255, 0); // 設定黃色文字
+  pg.textSize(pg.width * 0.05);
+  pg.textAlign(CENTER, CENTER);
+  pg.text("GRAPHICS OVERLAY", pg.width / 2, pg.height / 2);
+  pg.stroke(255);
+  pg.noFill();
+  pg.rect(10, 10, pg.width - 20, pg.height - 20, 10); // 畫一個邊框
+
   push();
   // 修正左右顛倒問題：將座標原點移至畫布右側，並水平翻轉座標系
   translate(width, 0);
   scale(-1, 1);
   
   // 繪製影像（由於座標系已翻轉，置中公式依然適用，影像會正確顯示在中間並呈現鏡像效果）
-  image(capture, (width - w) / 2, (height - h) / 2, w, h);
+  let xPos = (width - w) / 2;
+  let yPos = (height - h) / 2;
+  image(capture, xPos, yPos, w, h);
+  
+  // 將 pg 繪圖層顯示在視訊畫面的上方，位置與大小皆與視訊同步
+  image(pg, xPos, yPos, w, h);
   pop();
 }
 

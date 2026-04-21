@@ -1,6 +1,7 @@
 let capture;
 let pg;
 let bubbles = [];
+let btn;
 
 function setup() {
   // 建立一個跟視窗一樣大的畫布
@@ -18,6 +19,13 @@ function setup() {
   for (let i = 0; i < 20; i++) {
     bubbles.push(new Bubble(pg.width, pg.height));
   }
+
+  // 建立擷取按鈕
+  btn = createButton('擷取圖片');
+  btn.style('font-size', '20px');    // 加大字體
+  btn.style('padding', '10px 20px'); // 增加內距讓按鈕變大
+  btn.mousePressed(takeSnapshot);
+  repositionButton();
 }
 
 function draw() {
@@ -71,6 +79,25 @@ function draw() {
 function windowResized() {
   // 當視窗大小改變時，重新調整畫布大小
   resizeCanvas(windowWidth, windowHeight);
+  repositionButton();
+}
+
+function repositionButton() {
+  // 將按鈕放置在左上角
+  btn.position(20, 20);
+}
+
+function takeSnapshot() {
+  // 計算視訊在畫面上顯示的實際範圍
+  let w = width * 0.6;
+  let h = height * 0.6;
+  let x = (width - w) / 2;
+  let y = (height - h) / 2;
+  
+  // 使用 get() 取得該區域的影像內容
+  let img = get(x, y, w, h);
+  // 儲存為 jpg 檔案
+  save(img, 'my_snapshot.jpg');
 }
 
 // 泡泡類別
